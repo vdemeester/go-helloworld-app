@@ -22,7 +22,7 @@ spec:
       workspace: shared-workspace
     params:
     - name: url
-      value: $(params.api-git-url)
+      value: $(params.git-url)
   - name: build-image
     taskRef:
       name: buildah
@@ -42,7 +42,8 @@ spec:
     - name: manifest-dir
       workspace: shared-workspace
     params:
-    - script: |
+    - name: script
+      value: |
         kubectl apply -f manifests/
     runAfter:
     - build-image
