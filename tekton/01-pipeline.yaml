@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+  - name: git-url
+    type: string
+  - name: git-revision
+    type: string
+    default: "main"
+  - name: image
+    type: string
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: $(params.api-git-url)
+  - name: build-image
+    taskRef:
+      name: buildah
+      kind: ClusterTask
+    params:
+    - name: IMAGE
+      value: $(params.image)
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    runAfter:
+    - fetch-repository
+  - name: deploy-app
+    taskRef:
+      name: kubectl-action
+    workspaces:
+    - name: manifest-dir
+      workspace: shared-workspace
+    params:
+    - script: |
+        kubectl apply -f manifests/
+    runAfter:
+    - build-image

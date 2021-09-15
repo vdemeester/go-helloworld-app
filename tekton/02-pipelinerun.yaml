@@ -1,0 +1,23 @@
+--
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: build-deploy-pipelinerun-
+spec:
+  pipelineRef:
+    name: build-and-deploy
+  params:
+  - name: git-url
+    value: https://github.com/vdemeester/foo.git
+  - name: image
+    value: quay.io/vdemeester/foo
+  serviceAccountName: sa-hub-vdemeester-foo
+  workspaces:
+  - name: shared-workspace
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Mi
